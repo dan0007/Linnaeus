@@ -1,0 +1,9 @@
+clemson.edu(depth = 5, grnn){
+63 :number of features found
+Q1: 10 Q2: 14 Q3: 26 Q4: 13
+78% :Accuracy of trainset found
+}
+
+Auburn.edu(){
+
+}

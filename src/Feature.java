@@ -38,10 +38,10 @@ public class Feature {
 
     public int boolToInt(boolean YouBool){
         if (YouBool == true){
-            return -1;
+            return +1;
         }
         else {
-            return 1;
+            return -1;
         }
     }
 

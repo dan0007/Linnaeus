@@ -44,9 +44,9 @@ public class WebCrawler {
 
     public static void main(String[] args) {
         short method = 2;
-        short depth = 10;
+        short depth = 2;
 
-        WebCrawler crawlDefault = new WebCrawler("http://www.Auburn.com",depth);
+        WebCrawler crawlDefault = new WebCrawler("http://www.clemson.edu",depth);
 
         for (int i = 0; i < crawledFeatureList.size(); i++){
             try {
@@ -75,12 +75,10 @@ public class WebCrawler {
         }
         System.out.println(crawledFeatureList.size() + " :number of features found");
 
-        if (crawledFeatureList.get(0).quadrant1Sum < 10 || crawledFeatureList.get(0).quadrant2Sum < 10 ||
-                crawledFeatureList.get(0).quadrant3Sum < 10 || crawledFeatureList.get(0).quadrant4Sum < 10){
-            System.out.println("Q1: " + crawledFeatureList.get(0).quadrant1Sum + " Q2: " +
-                    crawledFeatureList.get(0).quadrant2Sum + " Q3: " + crawledFeatureList.get(0).quadrant3Sum +
-                    " Q4: " + crawledFeatureList.get(0).quadrant4Sum);
-        }
+
+        System.out.println("Q1: " + crawledFeatureList.get(0).quadrant1Sum + " Q2: " +
+                crawledFeatureList.get(0).quadrant2Sum + " Q3: " + crawledFeatureList.get(0).quadrant3Sum +
+                " Q4: " + crawledFeatureList.get(0).quadrant4Sum);
         System.out.println((int)crawledFeatureList.get(0).TSetAccuracy + "%" + " :Accuracy of trainset found");
 
     }
@@ -164,7 +162,9 @@ public class WebCrawler {
         String path = ""; //HTML Pages to file
         try {
 
-            File file = new File("out/pages/" + aUrl.substring(7,aUrl.length()-5) + ".txt");
+            File file = new File("out/pages/" +
+                    aUrl.substring(7,aUrl.length()-5).replaceAll("[^a-zA-Z ]", "").toLowerCase()
+                    + ".txt");
             path = file.getAbsolutePath();
             System.out.println(path + " -------------------------------------------------PATH of saved file");
             FileWriter writer = new FileWriter(file);
@@ -186,7 +186,7 @@ public class WebCrawler {
             int firstQuote = href.indexOf("\"");
             href = href.substring(firstQuote + 1);
             href = href.substring(0, href.length() - 1);
-            if(href.charAt(href.length()-1) == 'l' && href.charAt(0) == 'h') {
+            if(href.length() > 0 && href.charAt(href.length()-1) == 'l' && href.charAt(0) == 'h' && href.charAt(1) == 't') {
                 links.add(href);
             }
         }
