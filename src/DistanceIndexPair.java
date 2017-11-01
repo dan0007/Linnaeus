@@ -10,7 +10,6 @@ public class DistanceIndexPair implements Comparable<DistanceIndexPair> {
         index = theIndex;
         Clas =theClas;
     }
-
     public DistanceIndexPair(double theDistance, double aWeight, int theIndex, boolean theClas){
         distance = theDistance;
         weight = aWeight;
@@ -22,5 +21,4 @@ public class DistanceIndexPair implements Comparable<DistanceIndexPair> {
     public int compareTo(DistanceIndexPair DIPair) {
         return Double.compare(this.weightedDistance , DIPair.weightedDistance);
     }
-
 }

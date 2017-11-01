@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.List;
 
 public class Feature {
 
@@ -13,10 +12,10 @@ public class Feature {
     ArrayList<DistanceIndexPair> distanceBySmallest = new ArrayList<DistanceIndexPair>();
 
 
-    private static short quadrant1Sum = 0;
-    private static short quadrant2Sum = 0;
-    private static short quadrant3Sum = 0;
-    private static short quadrant4Sum = 0;
+    public static short quadrant1Sum = 0;
+    public static short quadrant2Sum = 0;
+    public static short quadrant3Sum = 0;
+    public static short quadrant4Sum = 0;
 
     public Feature(double[] aFP){
         FeaturePayload = aFP;
@@ -62,10 +61,10 @@ public class Feature {
             quadrant4Sum++;
         }
 
-        if (quadrant1Sum < 10 && quadrant2Sum < 10 && quadrant3Sum < 10 && quadrant4Sum < 10){
-            System.out.println("Q1: " + quadrant1Sum + " Q2: " + quadrant2Sum
-                    + " Q3: " + quadrant3Sum + " Q4: " + quadrant4Sum);
-        }
+//        if (quadrant1Sum < 10 || quadrant2Sum < 10 || quadrant3Sum < 10 || quadrant4Sum < 10){
+//            System.out.println("Q1: " + quadrant1Sum + " Q2: " + quadrant2Sum
+//                    + " Q3: " + quadrant3Sum + " Q4: " + quadrant4Sum);
+//        }
     }
 
     public double getGradientClassificaton() {

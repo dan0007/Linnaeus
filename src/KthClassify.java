@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -45,12 +42,21 @@ public class KthClassify {
                 printLogVB1(true);
             }
         }
+        if (aMethod == 2){
+            try{
+                File file = new File("./our_dataset.txt");
+                GRNN g = new GRNN(5, file); //0 is all
+                g.assignAccuracies();
+                aFeature.TSetAccuracy = g.testInternalAccuracy()*100;
+                aFeature.setGradientClassificaton(g.test(aFeature.FeaturePayload));
+            }catch( IOException e){
+                System.out.println("IOEXCEPT" + e);
+            }
+        }
         if(aMethod == 1){
             Classify.TSetAccuracy = AccuracyDWKNN();
             KNN_distance toClassify = new KNN_distance(aFeature,TrainSetAL,k);
-
         }
-
     }
 
     private double[][] OpenSetFromFile(String pathToDataSet){

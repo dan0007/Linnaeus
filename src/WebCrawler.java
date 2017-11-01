@@ -43,29 +43,45 @@ public class WebCrawler {
 //    }
 
     public static void main(String[] args) {
-        WebCrawler crawlDefault = new WebCrawler("http://www.Auburn.com",4);
+        short method = 2;
+        short depth = 10;
 
-        try {
-            System.out.println(crawlDefault.crawledFeatureList.get(0).address + " "
-                    + crawlDefault.crawledFeatureList.get(0).getGradientClassificaton() + " "
-                    + crawlDefault.crawledFeatureList.get(0).Classification + " "
-                    + Arrays.toString(crawlDefault.crawledFeatureList.get(0).FeaturePayload));
-        } catch(IndexOutOfBoundsException e){
-            System.out.println("Must not have found any pages");
+        WebCrawler crawlDefault = new WebCrawler("http://www.Auburn.com",depth);
+
+        for (int i = 0; i < crawledFeatureList.size(); i++){
+            try {
+                System.out.println(crawlDefault.crawledFeatureList.get(i).address + " "
+                        + crawlDefault.crawledFeatureList.get(i).getGradientClassificaton() + " "
+                        + crawlDefault.crawledFeatureList.get(i).Classification + " "
+                        + Arrays.toString(crawlDefault.crawledFeatureList.get(i).FeaturePayload));
+            } catch(IndexOutOfBoundsException e){
+                System.out.println("Must not have found any pages");
+            }
         }
+
         for (Feature temp : crawlDefault.crawledFeatureList){
-            KthClassify anthrtmp = new KthClassify(temp,(short)1,3);
+            KthClassify anthrtmp = new KthClassify(temp,method,3);
         }
-        try{
-        System.out.println(crawlDefault.crawledFeatureList.get(0).address + " "
-                + crawlDefault.crawledFeatureList.get(0).getGradientClassificaton() + " "
-                        + crawlDefault.crawledFeatureList.get(0).Classification + " "
-                + Arrays.toString(crawlDefault.crawledFeatureList.get(0).FeaturePayload));
-        } catch(IndexOutOfBoundsException e){
-            System.out.println("Must not have found any pages");
+        for (int i = 0; i < crawledFeatureList.size(); i++) {
+
+            try {
+                System.out.println(crawlDefault.crawledFeatureList.get(i).address + " "
+                        + crawlDefault.crawledFeatureList.get(i).getGradientClassificaton() + " "
+                        + crawlDefault.crawledFeatureList.get(i).Classification + " "
+                        + Arrays.toString(crawlDefault.crawledFeatureList.get(i).FeaturePayload));
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println("Must not have found any pages");
+            }
         }
         System.out.println(crawledFeatureList.size() + " :number of features found");
-        System.out.println(crawledFeatureList.get(0).TSetAccuracy + " :Accuracy of trainset found");
+
+        if (crawledFeatureList.get(0).quadrant1Sum < 10 || crawledFeatureList.get(0).quadrant2Sum < 10 ||
+                crawledFeatureList.get(0).quadrant3Sum < 10 || crawledFeatureList.get(0).quadrant4Sum < 10){
+            System.out.println("Q1: " + crawledFeatureList.get(0).quadrant1Sum + " Q2: " +
+                    crawledFeatureList.get(0).quadrant2Sum + " Q3: " + crawledFeatureList.get(0).quadrant3Sum +
+                    " Q4: " + crawledFeatureList.get(0).quadrant4Sum);
+        }
+        System.out.println((int)crawledFeatureList.get(0).TSetAccuracy + "%" + " :Accuracy of trainset found");
 
     }
 
@@ -74,6 +90,7 @@ public class WebCrawler {
         crawl(theDefaultURL,aDepth,1);
 
     }
+
     public WebCrawler(String aURL, int aDepth){
         crawl(aURL,aDepth,pageNum);
 
@@ -124,22 +141,17 @@ public class WebCrawler {
 
         double[] uniGram = new double[95];
         int sumOfAllChar = 0;
-        for (int pos = 0; pos < HTML.length(); ++pos) {
-            myChar = HTML.charAt(pos);
+        for (int pos = 0; pos < HTML.length(); ++pos) {//loop through all char in HTML page and build a featurePayload
+            myChar = HTML.charAt(pos);                  // also add up the total chars found
             indexOf = (int) myChar;
             if (indexOf >= 32 && indexOf < 127) {
                 sumOfAllChar += 1;
-            }
-        }
-        for (int pos = 0; pos < HTML.length(); ++pos) {
-            myChar = HTML.charAt(pos);
-            indexOf = (int) myChar;
-            if (indexOf >= 32 && indexOf < 127) {
                 uniGram[indexOf - 32]++;
+
             }
         }
         for (int pos = 0; pos < uniGram.length; ++pos) {
-            if (sumOfAllChar != 0){
+            if (sumOfAllChar != 0){//divide the each featurePayload unit by the total number of chars found
                 uniGram[pos] = uniGram[pos] / sumOfAllChar;
             }
         }
@@ -152,20 +164,15 @@ public class WebCrawler {
         String path = ""; //HTML Pages to file
         try {
 
-            File file = new File("./out/pages/" + aUrl.substring(7,aUrl.length()-5) + ".txt");
+            File file = new File("out/pages/" + aUrl.substring(7,aUrl.length()-5) + ".txt");
             path = file.getAbsolutePath();
             System.out.println(path + " -------------------------------------------------PATH of saved file");
             FileWriter writer = new FileWriter(file);
             writer.write(HTML);
             writer.flush();
             writer.close();
-//            System.out.print("Page: " + aUrl + "  ");
-//            for ( int i = 0; i < uniGram.length; i ++) {
-//                System.out.print(" '" + (char)(i + 32) + "'-" + uniGram[i] + " ");
-//            }
-//            System.out.println();
         } catch (IOException e) {
-            System.out.println("File could not be written:\n" + path);
+            System.out.println("File could not be written:" + path);
         }
 
     }
