@@ -12,8 +12,12 @@ public class KthClassify {
     private static short VB2 = 4;
     private static short DSID = 0;
 
+    ArrayList<Feature> candidatePos;
+    ArrayList<Feature> candidateNeg;
 
-        public static void main(String[] args) {
+
+
+    public static void main(String[] args) {
         KthClassify IsItBad = new KthClassify(new Feature(new double[] {0.103273398, 1.54E-4, 0.03534655,
                 0.001075765, 3.07E-4, 1.54E-4, 0.001383126, 0.0, 4.61E-4, 4.61E-4, 0.0, 0.0, 6.15E-4, 0.023359459,
                 0.006300907, 0.022130014, 0.00230521, 0.00245889, 0.003227294, 0.001690487, 3.07E-4, 0.001229445, 3.07E-4,
@@ -33,7 +37,7 @@ public class KthClassify {
                 for (Feature atmp : IsItBad.TrainSetAL){
                     System.out.println(atmp.FeaturePayload[3]);
                 }
-                IsItBad.WriteSetToFile(IsItBad.TrainSetAL);
+                IsItBad.DataSetSerializer(IsItBad.TrainSetAL);
                 IsItBad.TrainSetAL = IsItBad.DataSetDeserialiser("Linnaeus_DataSet.sp");
     }
 
@@ -66,15 +70,11 @@ public class KthClassify {
         }
         if(aMethod == 1){
             Classify.TSetAccuracy = AccuracyDWKNN();
-            KNN_distance toClassify = new KNN_distance(aFeature,TrainSetAL,k);
+//            KNN_distance toClassify = new KNN_distance(aFeature,TrainSetAL,k);
         }
     }
 
 
-    //TODO: serialize the DataSet update with archive name
-    //TODO: build filters for features
-        //remove all zero payloads
-    //TODO: balance pos and neg in dataset
     //TODO: proceedure for online updating
 
     private void UpdateDataSet(Feature aNewFeat){
@@ -94,11 +94,129 @@ public class KthClassify {
 
         //add other methods to clean the current TrainSet
     }
+    private void Normalize(ArrayList<Feature> anFeatureSet){
+
+        for (int j = 0; j < anFeatureSet.size(); j++) {
+            double magnitude;
+            double sumMag = 0;
+
+            for (int i = 0; i < 95; i++) {
+                sumMag += (anFeatureSet.get(j).FeaturePayload[i])
+                        * (anFeatureSet.get(j).FeaturePayload[i]);
+            }
+
+            magnitude = Math.sqrt(sumMag);
+            for (int i = 0; i < 95; i++) {
+                if (anFeatureSet.get(j).FeaturePayload[i] != 0 && magnitude != 0) {
+                    anFeatureSet.get(j).FeaturePayload[i] = (anFeatureSet.get(i).FeaturePayload[i] / magnitude);
+                }
+            }
+        }
+    }
+    private boolean filterDataFeature(Feature aFeature){ //returns false if feature is not candidate for the DataSet
+
+        //if payload is all zeros return false
+        boolean pass = false;
+        for (double adob : aFeature.FeaturePayload){
+            if (adob != 0) { pass = true;}
+        }
+
+        //other filters
+
+        return pass;
+    }
+    private ArrayList<Feature> DataSetHousekeeping(ArrayList<Feature> aDataSet) {
+        short numOfPos = 0;
+        short numOfNeg = 0;
+        int needsPosBallast = 0;
+        int needsNegBallast = 0;
+
+        //filer
+        for (Feature aFeat: aDataSet){
+            if (filterDataFeature(aFeat) == false){
+                aDataSet.remove(aFeat);
+            }
+        }
+        //calculate the ballast
+        for (Feature aFeat: aDataSet){
+            if (aFeat.Classification == true) {
+                numOfPos++;
+            }else{
+                numOfNeg--;
+            }
+        }
+        if ((numOfNeg + numOfPos) > 0){
+            needsNegBallast = numOfNeg+numOfPos;
+        }
+        else if((numOfNeg + numOfPos)< 0){
+            needsPosBallast = Math.abs(numOfNeg + numOfPos);
+        }
+        else{
+            System.out.println("DS Balanced" + numOfNeg + numOfPos);
+            return aDataSet;
+        }
+
+        if (candidateNeg != null || candidatePos != null){
+            if (candidateNeg != null){
+                UpdateDataSet(candidateNeg);
+            }
+            else{
+                UpdateDataSet(candidatePos);
+            }
+            return DataSetHousekeeping(aDataSet);
+
+        }
+        else{
+            System.out.println("No candidates available, removing excessive to balance");
+            for (Feature aFeat: aDataSet){
+                if (needsNegBallast > 0 && aFeat.Classification == true ) {
+                        aDataSet.remove(aFeat);
+                        needsNegBallast--;
+                }else if (needsPosBallast > 0 && aFeat.Classification == false){
+                    aDataSet.remove(aFeat);
+                needsPosBallast--;
+                }
+            }
+        }
 
 
 
+        return aDataSet;
 
 
+    }
+
+    private static void DataSetSerializer(ArrayList<Feature> CurrentTrainSet){
+
+        try {
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("Linnaeus_DataSet.sp"));
+            oos.writeObject(CurrentTrainSet);
+            oos.flush();
+        }catch(EOFException eof){
+            System.out.println("eof: " + eof);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    public static ArrayList<Feature> DataSetDeserialiser(String fileName) {
+
+        ArrayList<Feature> inList = new ArrayList<>();
+        try {
+            FileInputStream file = new FileInputStream(fileName);
+            ObjectInputStream in = new ObjectInputStream(file);
+            inList = (ArrayList<Feature>) in.readObject();
+            in.close();
+            file.close();
+
+        } catch (Exception ex) {
+            System.err.println("Erreur de lecture " + ex);
+        }
+        return inList;
+
+    }
     private double[][] OpenSetFromFile(String pathToDataSet){
         String line = null;
         String[] Words;
@@ -143,43 +261,6 @@ public class KthClassify {
         }
         return mainList;
     }
-    /*
-    * Write will write a different feature format than the origin "our_dataset"
-    * */
-    private static void WriteSetToFile(ArrayList<Feature> CurrentTrainSet){
-
-        try {
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("Linnaeus_DataSet.sp"));
-            oos.writeObject(CurrentTrainSet);
-            oos.flush();
-        }catch(EOFException eof){
-            System.out.println("eof: " + eof);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
-    public static ArrayList<Feature> DataSetDeserialiser(String fileName) {
-
-        ArrayList<Feature> inList = new ArrayList<>();
-        try {
-            FileInputStream file = new FileInputStream(fileName);
-            ObjectInputStream in = new ObjectInputStream(file);
-            inList = (ArrayList<Feature>) in.readObject();
-            in.close();
-            file.close();
-
-        } catch (Exception ex) {
-            System.err.println("Erreur de lecture " + ex);
-        }
-        return inList;
-
-    }
-
     private ArrayList<Feature> TSetToArrayList(double[][] ATrainSet) {
         ArrayList<Feature> returnSet =  new ArrayList<>();
         Feature aFeature;
@@ -187,10 +268,10 @@ public class KthClassify {
             int aGRIndex = (int)ATrainSet[i][0];
             boolean aClassification;
             if(ATrainSet[i][1] > 0) {
-                aClassification = false;
+                aClassification = true;
             }
             else{
-                aClassification = true;
+                aClassification = false;
             }
             double[] aFePay = new double[ATrainSet[i].length-2];
             for (int j = 0; j < ATrainSet[i].length-2; j++) {
@@ -203,25 +284,7 @@ public class KthClassify {
         }
         return returnSet;
     }
-    private void Normalize(ArrayList<Feature> anFeatureSet){
 
-        for (int j = 0; j < anFeatureSet.size(); j++) {
-            double magnitude;
-            double sumMag = 0;
-
-            for (int i = 0; i < 95; i++) {
-                sumMag += (anFeatureSet.get(j).FeaturePayload[i])
-                        * (anFeatureSet.get(j).FeaturePayload[i]);
-            }
-
-            magnitude = Math.sqrt(sumMag);
-            for (int i = 0; i < 95; i++) {
-                if (anFeatureSet.get(j).FeaturePayload[i] != 0 && magnitude != 0) {
-                    anFeatureSet.get(j).FeaturePayload[i] = (anFeatureSet.get(i).FeaturePayload[i] / magnitude);
-                }
-            }
-        }
-    }
     private double AccuracyKNN() {
 
         double accuracy;
@@ -249,10 +312,10 @@ public class KthClassify {
             Feature tmpFeat = new Feature(TrainSetAL.get(i).FeaturePayload, TrainSetAL.get(i).Classification,
                     TrainSetAL.get(i).givenReferenceIndex);
             tmpTSet.remove(i);
-            KNN_distance AccTest1 = new KNN_distance(tmpFeat, tmpTSet, k);
-            if ((AccTest1.theProspectiveFeature.Classification == TrainSetAL.get(i).Classification)){
-                correct++;
-            }
+//            KNN_distance AccTest1 = new KNN_distance(tmpFeat, tmpTSet, k);
+//            if ((AccTest1.theProspectiveFeature.Classification == TrainSetAL.get(i).Classification)){
+//                correct++;
+//            }
         }
         accuracy = ((double)correct/(double)TrainSetAL.size()) * 100;
 
