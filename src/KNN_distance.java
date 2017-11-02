@@ -1,17 +1,9 @@
-/**
- * Created by dbt00_000 on 10/16/2017.
- * Modified by ata0010 on 10/31/17
- */
-
-import java.io.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 class KNN_distance {
 
     ArrayList<Feature> TrainSet = new ArrayList<>();
     Feature theProspectiveFeature;
-
 
     public KNN_distance(Feature aProspectiveFeature, ArrayList<Feature> aTrainSet, int k) {
         TrainSet = aTrainSet;

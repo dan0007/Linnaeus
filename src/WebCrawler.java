@@ -43,7 +43,7 @@ public class WebCrawler {
 //    }
 
     public static void main(String[] args) {
-        short method = 2;
+        short method = 1;
         short depth = 2;
 
         WebCrawler crawlDefault = new WebCrawler("http://www.clemson.edu",depth);

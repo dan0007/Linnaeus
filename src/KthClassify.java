@@ -10,21 +10,32 @@ public class KthClassify {
     int k;
     private static short verbosity = 0;
     private static short VB2 = 4;
+    private static short DSID = 0;
 
-    //    public static void main(String[] args) {
-//        KthClassify IsItBad = new KthClassify(new Feature(new double[] {0.103273398, 1.54E-4, 0.03534655,
-//                0.001075765, 3.07E-4, 1.54E-4, 0.001383126, 0.0, 4.61E-4, 4.61E-4, 0.0, 0.0, 6.15E-4, 0.023359459,
-//                0.006300907, 0.022130014, 0.00230521, 0.00245889, 0.003227294, 0.001690487, 3.07E-4, 0.001229445, 3.07E-4,
-//                0.001075765, 0.001075765, 4.61E-4, 0.003688336, 0.001844168, 0.029199324, 0.017980636, 0.029199324,
-//                6.15E-4, 0.0, 0.003688336, 0.003842016, 0.002151529, 0.0047641, 7.68E-4, 0.001844168, 1.54E-4,
-//                0.003073613, 0.001075765, 3.07E-4, 0.0, 3.07E-4, 0.001383126, 3.07E-4, 4.61E-4, 0.003534655,
-//                0.0, 0.001075765, 0.001229445, 0.001383126, 1.54E-4, 3.07E-4, 0.001229445, 0.0, 1.54E-4, 0.0,
-//                1.54E-4, 0.0, 1.54E-4, 0.0, 0.002151529, 0.0, 0.065006916, 0.005993545, 0.033195021, 0.038420163,
-//                0.06131858, 0.010911326, 0.012601813, 0.022744736, 0.051329338, 0.001383126, 0.006608268, 0.035039189,
-//                0.015368065, 0.032119256, 0.036883356, 0.013370217, 3.07E-4, 0.044413708, 0.05179038,
-//                0.066390041, 0.012755494, 0.022283694, 0.009681881, 0.001536807, 0.00937452, 1.54E-4, 1.54E-4,
-//                3.07E-4, 1.54E-4, 0.0}));
-//    }
+
+        public static void main(String[] args) {
+        KthClassify IsItBad = new KthClassify(new Feature(new double[] {0.103273398, 1.54E-4, 0.03534655,
+                0.001075765, 3.07E-4, 1.54E-4, 0.001383126, 0.0, 4.61E-4, 4.61E-4, 0.0, 0.0, 6.15E-4, 0.023359459,
+                0.006300907, 0.022130014, 0.00230521, 0.00245889, 0.003227294, 0.001690487, 3.07E-4, 0.001229445, 3.07E-4,
+                0.001075765, 0.001075765, 4.61E-4, 0.003688336, 0.001844168, 0.029199324, 0.017980636, 0.029199324,
+                6.15E-4, 0.0, 0.003688336, 0.003842016, 0.002151529, 0.0047641, 7.68E-4, 0.001844168, 1.54E-4,
+                0.003073613, 0.001075765, 3.07E-4, 0.0, 3.07E-4, 0.001383126, 3.07E-4, 4.61E-4, 0.003534655,
+                0.0, 0.001075765, 0.001229445, 0.001383126, 1.54E-4, 3.07E-4, 0.001229445, 0.0, 1.54E-4, 0.0,
+                1.54E-4, 0.0, 1.54E-4, 0.0, 0.002151529, 0.0, 0.065006916, 0.005993545, 0.033195021, 0.038420163,
+                0.06131858, 0.010911326, 0.012601813, 0.022744736, 0.051329338, 0.001383126, 0.006608268, 0.035039189,
+                0.015368065, 0.032119256, 0.036883356, 0.013370217, 3.07E-4, 0.044413708, 0.05179038,
+                0.066390041, 0.012755494, 0.022283694, 0.009681881, 0.001536807, 0.00937452, 1.54E-4, 1.54E-4,
+                3.07E-4, 1.54E-4, 0.0}), (short)2, 3);
+
+
+                ArrayList<Feature> tmpTSet = new ArrayList<>(IsItBad.TrainSetAL);
+                tmpTSet.remove(0);
+                for (Feature atmp : IsItBad.TrainSetAL){
+                    System.out.println(atmp.FeaturePayload[3]);
+                }
+                IsItBad.WriteSetToFile(IsItBad.TrainSetAL);
+                IsItBad.TrainSetAL = IsItBad.DataSetDeserialiser("Linnaeus_DataSet.sp");
+    }
 
     public KthClassify(Feature aFeature, short aMethod, int k){
         method = aMethod;
@@ -58,6 +69,35 @@ public class KthClassify {
             KNN_distance toClassify = new KNN_distance(aFeature,TrainSetAL,k);
         }
     }
+
+
+    //TODO: serialize the DataSet update with archive name
+    //TODO: build filters for features
+        //remove all zero payloads
+    //TODO: balance pos and neg in dataset
+    //TODO: proceedure for online updating
+
+    private void UpdateDataSet(Feature aNewFeat){
+        //filter feature
+        TrainSetAL.add(aNewFeat);
+        DSID++;
+    }
+    private void UpdateDataSet(ArrayList<Feature> aNewListOfClassified){
+        for (Feature aTemp : aNewListOfClassified){
+            if (aTemp.getGradientClassificaton() == 0.0){
+                aNewListOfClassified.remove(aTemp);
+            }
+        }
+//
+        TrainSetAL.addAll(aNewListOfClassified);
+        DSID++;
+
+        //add other methods to clean the current TrainSet
+    }
+
+
+
+
 
     private double[][] OpenSetFromFile(String pathToDataSet){
         String line = null;
@@ -103,6 +143,43 @@ public class KthClassify {
         }
         return mainList;
     }
+    /*
+    * Write will write a different feature format than the origin "our_dataset"
+    * */
+    private static void WriteSetToFile(ArrayList<Feature> CurrentTrainSet){
+
+        try {
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("Linnaeus_DataSet.sp"));
+            oos.writeObject(CurrentTrainSet);
+            oos.flush();
+        }catch(EOFException eof){
+            System.out.println("eof: " + eof);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public static ArrayList<Feature> DataSetDeserialiser(String fileName) {
+
+        ArrayList<Feature> inList = new ArrayList<>();
+        try {
+            FileInputStream file = new FileInputStream(fileName);
+            ObjectInputStream in = new ObjectInputStream(file);
+            inList = (ArrayList<Feature>) in.readObject();
+            in.close();
+            file.close();
+
+        } catch (Exception ex) {
+            System.err.println("Erreur de lecture " + ex);
+        }
+        return inList;
+
+    }
+
     private ArrayList<Feature> TSetToArrayList(double[][] ATrainSet) {
         ArrayList<Feature> returnSet =  new ArrayList<>();
         Feature aFeature;
